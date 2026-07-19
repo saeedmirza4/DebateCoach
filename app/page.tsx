@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const STATS_KEY = "debatecoach_stats";
 
 export default function Home() {
   const [currentView, setCurrentView] = useState("landing");
@@ -11,8 +13,21 @@ export default function Home() {
   const [aiCounter, setAiCounter] = useState("");
   const [userRebuttal, setUserRebuttal] = useState("");
   const [score, setScore] = useState("");
+  const [tips, setTips] = useState("");
+  const [tipsLoading, setTipsLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [stats, setStats] = useState({ totalDebates: 0, scoredCount: 0, totalScore: 0 });
+
+  // Load stats from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STATS_KEY);
+      if (raw) setStats(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  const avgScore = stats.scoredCount > 0 ? (stats.totalScore / stats.scoredCount).toFixed(1) : null;
 
   const callAPI = async (payload: object) => {
     const res = await fetch("/api/debate", {
@@ -47,6 +62,15 @@ export default function Home() {
     setLoading(false);
   };
 
+  const handleGetTips = async () => {
+    setTipsLoading(true);
+    try {
+      const result = await callAPI({ stage: "tips", topic, side, userArgument: aiCounter });
+      setTips(result);
+    } catch { setError("Something went wrong. Try again."); }
+    setTipsLoading(false);
+  };
+
   const handleGetScore = async () => {
     if (!userRebuttal.trim()) { setError("Write your rebuttal before submitting."); return; }
     setError("");
@@ -55,6 +79,18 @@ export default function Home() {
       const result = await callAPI({ stage: "score", topic, side, userArgument: userRebuttal, aiCounterArgument: aiCounter });
       setScore(result);
       setStage("score");
+
+      // Update persisted stats
+      const match = result.match(/(\d{1,2})\s*\/\s*10/);
+      setStats((prev) => {
+        const updated = {
+          totalDebates: prev.totalDebates + 1,
+          scoredCount: match ? prev.scoredCount + 1 : prev.scoredCount,
+          totalScore: match ? prev.totalScore + parseInt(match[1], 10) : prev.totalScore,
+        };
+        try { localStorage.setItem(STATS_KEY, JSON.stringify(updated)); } catch {}
+        return updated;
+      });
     } catch { setError("Something went wrong. Try again."); }
     setLoading(false);
   };
@@ -62,6 +98,7 @@ export default function Home() {
   const handleReset = () => {
     setTopic(""); setSide("for"); setDifficulty("medium"); setStage("setup");
     setAiArguments(""); setAiCounter(""); setUserRebuttal(""); setScore(""); setError("");
+    setTips(""); setTipsLoading(false);
     setCurrentView("app");
   };
 
@@ -139,7 +176,7 @@ export default function Home() {
         </section>
 
         {/* Stats */}
-        <section style={{ padding: "60px 48px", borderTop: "1px solid #1E2A3A", borderBottom: "1px solid #1E2A3A", display: "flex", gap: "64px", flexWrap: "wrap" }}>
+        <section style={{ padding: "60px 48px", borderTop: "1px solid #1E2A3A", borderBottom: stats.totalDebates > 0 ? "none" : "1px solid #1E2A3A", display: "flex", gap: "64px", flexWrap: "wrap" }}>
           {[["3", "AI-powered rounds"], ["Real-time", "argument scoring"], ["Any topic", "you can think of"], ["Free", "no signup needed"]].map(([val, label]) => (
             <div key={label}>
               <div className="playfair amber" style={{ fontSize: "32px", fontWeight: "700", marginBottom: "4px" }}>{val}</div>
@@ -147,6 +184,27 @@ export default function Home() {
             </div>
           ))}
         </section>
+
+        {/* Your progress (only once the user has completed a debate) */}
+        {stats.totalDebates > 0 && (
+          <section style={{ padding: "48px 48px 60px", borderBottom: "1px solid #1E2A3A", display: "flex", gap: "64px", flexWrap: "wrap" }}>
+            <div>
+              <p style={{ fontSize: "12px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#8892A4", marginBottom: "16px", fontWeight: "500" }}>Your progress</p>
+              <div style={{ display: "flex", gap: "64px", flexWrap: "wrap" }}>
+                <div>
+                  <div className="playfair amber" style={{ fontSize: "32px", fontWeight: "700", marginBottom: "4px" }}>{stats.totalDebates}</div>
+                  <div style={{ fontSize: "13px", color: "#8892A4", fontWeight: "400" }}>debates completed</div>
+                </div>
+                {avgScore && (
+                  <div>
+                    <div className="playfair amber" style={{ fontSize: "32px", fontWeight: "700", marginBottom: "4px" }}>{avgScore}/10</div>
+                    <div style={{ fontSize: "13px", color: "#8892A4", fontWeight: "400" }}>average score</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Footer */}
         <footer style={{ padding: "32px 48px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -209,6 +267,9 @@ export default function Home() {
         .btn-app-primary { background: #E8A020; color: #0A0F1E; border: none; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: 0.02em; transition: all 0.2s; font-family: 'Inter', sans-serif; width: 100%; }
         .btn-app-primary:hover:not(:disabled) { background: #F5B535; }
         .btn-app-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-outline-amber { background: transparent; color: #E8A020; border: 1px solid #E8A020; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: 0.02em; transition: all 0.2s; font-family: 'Inter', sans-serif; width: 100%; }
+        .btn-outline-amber:hover:not(:disabled) { background: rgba(232, 160, 32, 0.1); }
+        .btn-outline-amber:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-danger { background: #7F1D1D; color: #FCA5A5; border: none; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; width: 100%; }
         .btn-danger:hover:not(:disabled) { background: #991B1B; }
         .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -240,6 +301,16 @@ export default function Home() {
           Debate<span className="amber">Coach</span>
         </div>
         <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+          {stats.totalDebates > 0 && (
+            <span style={{ fontSize: "12px", color: "#8892A4", letterSpacing: "0.02em" }}>
+              <span className="amber" style={{ fontWeight: "600" }}>{stats.totalDebates}</span> debates
+              {avgScore && (
+                <>
+                  {" "}· <span className="amber" style={{ fontWeight: "600" }}>{avgScore}/10</span> avg
+                </>
+              )}
+            </span>
+          )}
           <button className="nav-link" onClick={() => setCurrentView("how")}>How it works</button>
           <button className="nav-link" onClick={handleReset}>New debate</button>
         </div>
@@ -342,6 +413,26 @@ export default function Home() {
               <p style={{ fontSize: "13px", color: "#8892A4", marginBottom: "16px" }}>The opposition has attacked your position. Now defend it.</p>
               <div className="content-box" style={{ borderColor: "#7F1D1D" }}>{aiCounter}</div>
             </div>
+
+            {/* Rebuttal tips */}
+            <div>
+              {!tips && (
+                <button
+                  className="btn-outline-amber"
+                  onClick={handleGetTips}
+                  disabled={tipsLoading}
+                >
+                  {tipsLoading ? "Thinking of tactics..." : "Get Rebuttal Tips"}
+                </button>
+              )}
+              {tips && (
+                <div>
+                  <p style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#E8A020", marginBottom: "6px", fontWeight: "500" }}>Tactical tips</p>
+                  <div className="content-box" style={{ borderColor: "#E8A020" }}>{tips}</div>
+                </div>
+              )}
+            </div>
+
             <div>
               <p style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#8892A4", marginBottom: "10px", fontWeight: "500" }}>Your rebuttal</p>
               <textarea

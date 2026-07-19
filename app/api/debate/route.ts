@@ -45,6 +45,18 @@ COUNTER 2: [title]
 COUNTER 3: [title]
 [2-3 sentence explanation]`;
 
+    } else if (stage === "tips") {
+      prompt = `You are a debate coach. The topic is: "${topic}".
+The user is arguing "${side}" and faces these counter-arguments:
+${userArgument}
+
+Give 3 short, tactical tips on how to rebut these specific counter-arguments. Format as:
+TIP 1: [one sentence — specific tactical advice]
+TIP 2: [one sentence — specific tactical advice]
+TIP 3: [one sentence — specific tactical advice]
+
+Be direct and specific to these exact counter-arguments, not generic advice.`;
+
     } else if (stage === "score") {
       prompt = `You are a debate judge. The topic is: "${topic}". 
 The AI attacked with these counter-arguments: ${aiCounterArgument}
