@@ -5,6 +5,7 @@ export default function Home() {
   const [currentView, setCurrentView] = useState("landing");
   const [topic, setTopic] = useState("");
   const [side, setSide] = useState("for");
+  const [difficulty, setDifficulty] = useState("medium");
   const [stage, setStage] = useState("setup");
   const [aiArguments, setAiArguments] = useState("");
   const [aiCounter, setAiCounter] = useState("");
@@ -39,7 +40,7 @@ export default function Home() {
   const handleGetCounter = async () => {
     setLoading(true);
     try {
-      const result = await callAPI({ stage: "counter", topic, side, userArgument: aiArguments });
+      const result = await callAPI({ stage: "counter", topic, side, userArgument: aiArguments, difficulty });
       setAiCounter(result);
       setStage("counter");
     } catch { setError("Something went wrong. Try again."); }
@@ -59,7 +60,7 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    setTopic(""); setSide("for"); setStage("setup");
+    setTopic(""); setSide("for"); setDifficulty("medium"); setStage("setup");
     setAiArguments(""); setAiCounter(""); setUserRebuttal(""); setScore(""); setError("");
     setCurrentView("app");
   };
@@ -71,28 +72,26 @@ export default function Home() {
     "Remote work is better than office work",
   ];
 
+  const sharedStyles = `
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    .playfair { font-family: 'Playfair Display', serif; }
+    .amber { color: #E8A020; }
+    .nav-link { color: #8892A4; text-decoration: none; font-size: 14px; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; transition: color 0.2s; background: none; border: none; font-family: 'Inter', sans-serif; }
+    .nav-link:hover { color: #F8F9FA; }
+    .btn-primary { background: #E8A020; color: #0A0F1E; border: none; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: 0.03em; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .btn-primary:hover { background: #F5B535; transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: #F8F9FA; border: 1px solid #2A3244; padding: 14px 32px; font-size: 15px; font-weight: 500; cursor: pointer; letter-spacing: 0.03em; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .btn-ghost:hover { border-color: #E8A020; color: #E8A020; }
+    .divider { width: 48px; height: 2px; background: #E8A020; }
+    .topic-chip { background: #111827; border: 1px solid #1E2A3A; padding: 10px 16px; font-size: 13px; color: #8892A4; cursor: pointer; transition: all 0.2s; text-align: left; font-family: 'Inter', sans-serif; }
+    .topic-chip:hover { border-color: #E8A020; color: #F8F9FA; }
+  `;
+
   if (currentView === "landing") {
     return (
       <div style={{ fontFamily: "'Inter', sans-serif", background: "#0A0F1E", minHeight: "100vh", color: "#F8F9FA" }}>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap');
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          .playfair { font-family: 'Playfair Display', serif; }
-          .amber { color: #E8A020; }
-          .amber-bg { background: #E8A020; }
-          .nav-link { color: #8892A4; text-decoration: none; font-size: 14px; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; transition: color 0.2s; }
-          .nav-link:hover { color: #F8F9FA; }
-          .btn-primary { background: #E8A020; color: #0A0F1E; border: none; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: 0.03em; transition: all 0.2s; font-family: 'Inter', sans-serif; }
-          .btn-primary:hover { background: #F5B535; transform: translateY(-1px); }
-          .btn-ghost { background: transparent; color: #F8F9FA; border: 1px solid #2A3244; padding: 14px 32px; font-size: 15px; font-weight: 500; cursor: pointer; letter-spacing: 0.03em; transition: all 0.2s; font-family: 'Inter', sans-serif; }
-          .btn-ghost:hover { border-color: #E8A020; color: #E8A020; }
-          .divider { width: 48px; height: 2px; background: #E8A020; }
-          .card { background: #111827; border: 1px solid #1E2A3A; padding: 32px; }
-          .stage-pill { display: inline-block; padding: 4px 12px; border: 1px solid #2A3244; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #8892A4; }
-          .stage-pill.active { border-color: #E8A020; color: #E8A020; }
-          .topic-chip { background: #111827; border: 1px solid #1E2A3A; padding: 10px 16px; font-size: 13px; color: #8892A4; cursor: pointer; transition: all 0.2s; text-align: left; font-family: 'Inter', sans-serif; }
-          .topic-chip:hover { border-color: #E8A020; color: #F8F9FA; }
-        `}</style>
+        <style>{sharedStyles}</style>
 
         {/* Nav */}
         <nav style={{ padding: "0 48px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #1E2A3A" }}>
@@ -161,16 +160,7 @@ export default function Home() {
   if (currentView === "how") {
     return (
       <div style={{ fontFamily: "'Inter', sans-serif", background: "#0A0F1E", minHeight: "100vh", color: "#F8F9FA" }}>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap');
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          .playfair { font-family: 'Playfair Display', serif; }
-          .amber { color: #E8A020; }
-          .btn-primary { background: #E8A020; color: #0A0F1E; border: none; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: 0.03em; transition: all 0.2s; font-family: 'Inter', sans-serif; }
-          .btn-primary:hover { background: #F5B535; }
-          .nav-link { color: #8892A4; text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; transition: color 0.2s; }
-          .nav-link:hover { color: #F8F9FA; }
-        `}</style>
+        <style>{sharedStyles}</style>
 
         <nav style={{ padding: "0 48px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #1E2A3A" }}>
           <div className="playfair" style={{ fontSize: "20px", fontWeight: "700", cursor: "pointer" }} onClick={() => setCurrentView("landing")}>
@@ -188,9 +178,9 @@ export default function Home() {
           <p style={{ color: "#8892A4", fontSize: "16px", marginBottom: "64px", lineHeight: "1.7" }}>Four stages. One complete practice session. Real feedback that makes you better.</p>
 
           {[
-            { n: "01", title: "Choose your position", desc: "Pick any debate topic — political, social, philosophical, or tech. Choose whether you're arguing for or against it. The more specific the topic, the sharper the training." },
+            { n: "01", title: "Choose your position", desc: "Pick any debate topic — political, social, philosophical, or tech. Choose whether you're arguing for or against it, and set your difficulty level. The more specific the topic, the sharper the training." },
             { n: "02", title: "Build your case", desc: "The AI generates three strong, structured arguments for your chosen side. Study them. Understand the logic. These are the foundations you'll defend." },
-            { n: "03", title: "Face the opposition", desc: "The AI switches sides and attacks your arguments with three counter-arguments designed to expose every weakness. This is where real debate training happens." },
+            { n: "03", title: "Face the opposition", desc: "The AI switches sides and attacks your arguments with three counter-arguments designed to expose every weakness. Difficulty level determines how brutal the attack is." },
             { n: "04", title: "Defend and get scored", desc: "Write your rebuttal. An AI judge evaluates your response — scoring your logic, strength of argument, and areas for improvement — just like a real debate panel would." },
           ].map(({ n, title, desc }) => (
             <div key={n} style={{ display: "flex", gap: "32px", marginBottom: "48px", paddingBottom: "48px", borderBottom: "1px solid #1E2A3A" }}>
@@ -215,21 +205,18 @@ export default function Home() {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", background: "#0A0F1E", minHeight: "100vh", color: "#F8F9FA" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        .playfair { font-family: 'Playfair Display', serif; }
-        .amber { color: #E8A020; }
-        .btn-primary { background: #E8A020; color: #0A0F1E; border: none; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: 0.02em; transition: all 0.2s; font-family: 'Inter', sans-serif; width: 100%; }
-        .btn-primary:hover:not(:disabled) { background: #F5B535; }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        ${sharedStyles}
+        .btn-app-primary { background: #E8A020; color: #0A0F1E; border: none; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: 0.02em; transition: all 0.2s; font-family: 'Inter', sans-serif; width: 100%; }
+        .btn-app-primary:hover:not(:disabled) { background: #F5B535; }
+        .btn-app-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-danger { background: #7F1D1D; color: #FCA5A5; border: none; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; width: 100%; }
         .btn-danger:hover:not(:disabled) { background: #991B1B; }
         .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-success { background: #14532D; color: #86EFAC; border: none; padding: 14px 32px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; width: 100%; }
         .btn-success:hover:not(:disabled) { background: #166534; }
         .btn-success:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-ghost { background: transparent; color: #8892A4; border: 1px solid #1E2A3A; padding: 14px 32px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; width: 100%; }
-        .btn-ghost:hover { border-color: #E8A020; color: #E8A020; }
+        .btn-reset { background: transparent; color: #8892A4; border: 1px solid #1E2A3A; padding: 14px 32px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; width: 100%; }
+        .btn-reset:hover { border-color: #E8A020; color: #E8A020; }
         .input-field { width: 100%; background: #111827; border: 1px solid #1E2A3A; color: #F8F9FA; padding: 14px 16px; font-size: 15px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; }
         .input-field:focus { border-color: #E8A020; }
         .input-field::placeholder { color: #4A5568; }
@@ -237,12 +224,15 @@ export default function Home() {
         .textarea-field:focus { border-color: #E8A020; }
         .textarea-field::placeholder { color: #4A5568; }
         .content-box { background: #111827; border: 1px solid #1E2A3A; padding: 24px; font-size: 14px; line-height: 1.8; color: #C4CDD8; white-space: pre-wrap; }
-        .nav-link { color: #8892A4; font-size: 14px; font-weight: 500; cursor: pointer; transition: color 0.2s; background: none; border: none; font-family: 'Inter', sans-serif; }
-        .nav-link:hover { color: #F8F9FA; }
         .side-btn { flex: 1; padding: 12px; background: #111827; border: 1px solid #1E2A3A; color: #8892A4; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em; }
         .side-btn.for.active { background: #1A2E1A; border-color: #86EFAC; color: #86EFAC; }
         .side-btn.against.active { background: #2E1A1A; border-color: #FCA5A5; color: #FCA5A5; }
         .side-btn:hover { border-color: #4A5568; color: #F8F9FA; }
+        .diff-btn { flex: 1; padding: 12px; background: #111827; border: 1px solid #1E2A3A; color: #8892A4; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-transform: capitalize; letter-spacing: 0.03em; }
+        .diff-btn:hover { border-color: #4A5568; color: #F8F9FA; }
+        .diff-btn.easy.active { background: #14532D; border-color: #86EFAC; color: #86EFAC; }
+        .diff-btn.medium.active { background: #1A2E4A; border-color: #60A5FA; color: #60A5FA; }
+        .diff-btn.hard.active { background: #2E1A1A; border-color: #FCA5A5; color: #FCA5A5; }
       `}</style>
 
       <nav style={{ padding: "0 48px", height: "64px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #1E2A3A" }}>
@@ -265,6 +255,9 @@ export default function Home() {
               {topic}
               <span style={{ marginLeft: "12px", fontSize: "13px", padding: "3px 10px", border: `1px solid ${side === "for" ? "#86EFAC" : "#FCA5A5"}`, color: side === "for" ? "#86EFAC" : "#FCA5A5", fontFamily: "Inter, sans-serif", fontWeight: "500", letterSpacing: "0.05em", textTransform: "uppercase", verticalAlign: "middle" }}>
                 {side}
+              </span>
+              <span style={{ marginLeft: "8px", fontSize: "13px", padding: "3px 10px", border: `1px solid ${difficulty === "easy" ? "#86EFAC" : difficulty === "hard" ? "#FCA5A5" : "#60A5FA"}`, color: difficulty === "easy" ? "#86EFAC" : difficulty === "hard" ? "#FCA5A5" : "#60A5FA", fontFamily: "Inter, sans-serif", fontWeight: "500", letterSpacing: "0.05em", textTransform: "uppercase", verticalAlign: "middle" }}>
+                {difficulty}
               </span>
             </h2>
           </div>
@@ -308,7 +301,20 @@ export default function Home() {
                 <button className={`side-btn against ${side === "against" ? "active" : ""}`} onClick={() => setSide("against")}>Against</button>
               </div>
             </div>
-            <button className="btn-primary" onClick={handleGetArguments} disabled={loading}>
+            <div>
+              <p style={{ fontSize: "11px", letterSpacing: "0.1em", textTransform: "uppercase", color: "#8892A4", marginBottom: "4px", fontWeight: "500" }}>Difficulty</p>
+              <p style={{ fontSize: "12px", color: "#4A5568", marginBottom: "10px" }}>
+                {difficulty === "easy" ? "Gentle counter-arguments — good for beginners." : difficulty === "hard" ? "Brutal attacks — maximum challenge." : "Balanced opposition — fair and competitive."}
+              </p>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {["easy", "medium", "hard"].map((d) => (
+                  <button key={d} className={`diff-btn ${d} ${difficulty === d ? "active" : ""}`} onClick={() => setDifficulty(d)}>
+                    {d === "easy" ? "Easy" : d === "medium" ? "Medium" : "Hard"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button className="btn-app-primary" onClick={handleGetArguments} disabled={loading}>
               {loading ? "Building your case..." : "Build My Arguments"}
             </button>
           </div>
@@ -361,7 +367,7 @@ export default function Home() {
               <div className="content-box" style={{ borderColor: "#E8A020" }}>{score}</div>
             </div>
             <p style={{ fontSize: "11px", color: "#4A5568", textAlign: "center" }}>Arguments are AI-generated for practice purposes. Verify statistics before real use.</p>
-            <button className="btn-ghost" onClick={handleReset}>Start a New Debate</button>
+            <button className="btn-reset" onClick={handleReset}>Start a New Debate</button>
           </div>
         )}
       </div>

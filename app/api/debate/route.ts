@@ -5,7 +5,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(request: NextRequest) {
   try {
-    const { stage, topic, side, userArgument, aiCounterArgument } = await request.json();
+    const { stage, topic, side, userArgument, aiCounterArgument, difficulty } = await request.json();
 
     let prompt = "";
 
@@ -24,8 +24,16 @@ ARGUMENT 3: [title]
 Be clear, persuasive, and compelling.`;
 
     } else if (stage === "counter") {
+      const difficultyInstruction = difficulty === "easy"
+        ? "Be relatively gentle — present mild counter-arguments that are easy to rebut. Good for beginners."
+        : difficulty === "hard"
+        ? "Be absolutely brutal — attack every weakness mercilessly with sophisticated logic, statistics, and philosophical challenges. Make it very hard to respond."
+        : "Be moderately aggressive — strong counter-arguments but fair and balanced.";
+
       prompt = `You are a debate opponent. The topic is: "${topic}". The user is arguing for the "${side}" side.
 Their arguments were: ${userArgument}
+
+Difficulty level: ${difficulty}. ${difficultyInstruction}
 
 Generate 3 powerful counter-arguments attacking their position. Format as:
 COUNTER 1: [title]
@@ -35,9 +43,7 @@ COUNTER 2: [title]
 [2-3 sentence explanation]
 
 COUNTER 3: [title]
-[2-3 sentence explanation]
-
-Be aggressive but logical.`;
+[2-3 sentence explanation]`;
 
     } else if (stage === "score") {
       prompt = `You are a debate judge. The topic is: "${topic}". 
@@ -64,8 +70,8 @@ VERDICT:
       max_tokens: 1024,
     });
 
-    return NextResponse.json({ 
-      result: completion.choices[0]?.message?.content || "" 
+    return NextResponse.json({
+      result: completion.choices[0]?.message?.content || ""
     });
 
   } catch (error) {
